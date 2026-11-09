@@ -270,7 +270,7 @@
         • <strong>Fase 2 (Chefão):</strong> 10 Perguntas avançadas com fantasmas e encolhimento progressivo!
       </div>
 
-      <button class="btn" id="btn-start-game">INICIAR JOGO</button>
+      <button class="btn" id="btn-start-game" onclick="startGame()">INICIAR JOGO</button>
     </div>
 
     <!-- TELA INTERMEDIÁRIA -->
@@ -286,7 +286,7 @@
         • <strong>Chefão Final</strong> na 10ª pergunta!
       </div>
 
-      <button class="btn" id="btn-start-phase2">INICIAR PRÓXIMA FASE</button>
+      <button class="btn" onclick="startPhase2()">INICIAR PRÓXIMA FASE</button>
     </div>
 
     <!-- TELA DE JOGO -->
@@ -296,7 +296,7 @@
         <div class="hud-item">VIDAS: <span id="hud-lives">❤️❤️❤️</span></div>
         <div class="hud-item">PONTOS: <span id="hud-score" style="color:var(--accent-green)">0</span></div>
         <div class="hud-item">BOLINHAS: <span id="hud-dots" style="color:var(--accent-blue)">0</span></div>
-        <div class="hud-item"><button class="btn btn-pause" id="btn-pause-game">⏸ PAUSE</button></div>
+        <div class="hud-item"><button class="btn btn-pause" onclick="togglePause()">⏸ PAUSE</button></div>
       </div>
 
       <div id="question-card">
@@ -311,11 +311,11 @@
       <div id="shop-bar">
         <div class="shop-item">
           <span>Escudo (10 pts)</span>
-          <button class="btn btn-shop" id="btn-power-shield">ESCUDO (5s)</button>
+          <button class="btn btn-shop" id="btn-power-shield" onclick="buyPowerUp('shield')">ESCUDO (5s)</button>
         </div>
         <div class="shop-item">
           <span>Congelar (30 pts)</span>
-          <button class="btn btn-shop" id="btn-power-freeze">FREEZE (4s)</button>
+          <button class="btn btn-shop" id="btn-power-freeze" onclick="buyPowerUp('freeze')">FREEZE (4s)</button>
         </div>
       </div>
       
@@ -326,602 +326,354 @@
     <div id="end-screen" class="screen hidden">
       <h1 class="retro-font" id="end-title">VITÓRIA!</h1>
       <p id="end-message" style="font-size: 18px; margin: 15px 0;"></p>
-      <button class="btn" id="btn-restart-game">JOGAR NOVAMENTE</button>
+      <button class="btn" onclick="resetGame()">JOGAR NOVAMENTE</button>
     </div>
 
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    const confettiColors = ['#ffe600', '#00d2ff', '#ff3366', '#00ff88', '#ffffff'];
+    let confettiParticles = [];
 
-      const confettiColors = ['#ffe600', '#00d2ff', '#ff3366', '#00ff88', '#ffffff'];
-      let confettiParticles = [];
-
-      function initConfetti() {
-        confettiParticles = [];
-        for(let i=0; i<80; i++){
-          confettiParticles.push({
-            x: Math.random() * 600,
-            y: Math.random() * 400 - 400,
-            size: Math.random() * 8 + 4,
-            color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
-            speedY: Math.random() * 3 + 2,
-            speedX: Math.random() * 2 - 1
-          });
-        }
+    function initConfetti() {
+      confettiParticles = [];
+      for(let i=0; i<80; i++){
+        confettiParticles.push({
+          x: Math.random() * 600,
+          y: Math.random() * 400 - 400,
+          size: Math.random() * 8 + 4,
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+          speedY: Math.random() * 3 + 2,
+          speedX: Math.random() * 2 - 1
+        });
       }
+    }
 
-      const questionsPhase1 = [
-        {
-          text: "Na tabela de vendas de roupas, qual fórmula no Excel representa o cálculo correto de 10% de desconto sobre a célula B2?",
-          options: [
-            { letter: "A", text: "A: =B2 - 10", correct: false },
-            { letter: "B", text: "B: =B2 * 0,10", correct: true },
-            { letter: "C", text: "C: =B2 / 100", correct: false },
-            { letter: "D", text: "D: =SOMA(B2:10%)", correct: false }
-          ]
-        },
-        {
-          text: "Uma planilha indica R$ 2.000 em vendas totais. Se a comissão é de 5%, qual o valor exato a ser pago?",
-          options: [
-            { letter: "A", text: "A: R$ 100,00", correct: true },
-            { letter: "B", text: "B: R$ 200,00", correct: false },
-            { letter: "C", text: "C: R$ 50,00", correct: false },
-            { letter: "D", text: "D: R$ 150,00", correct: false }
-          ]
-        }
+    const questionsPhase1 = [
+      {
+        text: "Na tabela de vendas de roupas, qual fórmula no Excel representa o cálculo correto de 10% de desconto sobre a célula B2?",
+        options: [
+          { letter: "A", text: "A: =B2 - 10", correct: false },
+          { letter: "B", text: "B: =B2 * 0,10", correct: true },
+          { letter: "C", text: "C: =B2 / 100", correct: false },
+          { letter: "D", text: "D: =SOMA(B2:10%)", correct: false }
+        ]
+      },
+      {
+        text: "Uma planilha indica R$ 2.000 em vendas totais. Se a comissão é de 5%, qual o valor exato a ser pago?",
+        options: [
+          { letter: "A", text: "A: R$ 100,00", correct: true },
+          { letter: "B", text: "B: R$ 200,00", correct: false },
+          { letter: "C", text: "C: R$ 50,00", correct: false },
+          { letter: "D", text: "D: R$ 150,00", correct: false }
+        ]
+      }
+    ];
+
+    const questionsPhase2 = [
+      {
+        text: "1/10: Um erro comum em tabelas é a divisão por zero (#DIV/0!). Como tratar esse erro na fórmula?",
+        options: [
+          { letter: "A", text: "A: Usar =SEERRO()", correct: true },
+          { letter: "B", text: "B: Excluir a linha", correct: false },
+          { letter: "C", text: "C: Somar +1 no divisor", correct: false },
+          { letter: "D", text: "D: Apagar a célula", correct: false }
+        ]
+      },
+      {
+        text: "2/10: Uma loja vendeu R$ 40.000 no mês. Qual a porcentagem referente ao produto X que faturou R$ 10.000?",
+        options: [
+          { letter: "A", text: "A: 15%", correct: false },
+          { letter: "B", text: "B: 20%", correct: false },
+          { letter: "C", text: "C: 25%", correct: true },
+          { letter: "D", text: "D: 30%", correct: false }
+        ]
+      },
+      {
+        text: "3/10: O erro '#VALOR!' em uma tabela de vendas geralmente acontece quando:",
+        options: [
+          { letter: "A", text: "A: A coluna é estreita", correct: false },
+          { letter: "B", text: "B: Há texto em cálculo matemático", correct: true },
+          { letter: "C", text: "C: A célula está vazia", correct: false },
+          { letter: "D", text: "D: O arquivo foi fechado", correct: false }
+        ]
+      },
+      {
+        text: "4/10: Para calcular um acréscimo de 15% sobre o preço de custo na célula C4, qual fórmula usar?",
+        options: [
+          { letter: "A", text: "A: =C4 * 1,15", correct: true },
+          { letter: "B", text: "B: =C4 + 15", correct: false },
+          { letter: "C", text: "C: =C4 * 15%", correct: false },
+          { letter: "D", text: "D: =C4 / 1,15", correct: false }
+        ]
+      },
+      {
+        text: "5/10: Na planilha de controle de estoque, o erro '##### ' significa que:",
+        options: [
+          { letter: "A", text: "A: A fórmula está errada", correct: false },
+          { letter: "B", text: "B: A coluna é curta para o valor", correct: true },
+          { letter: "C", text: "C: O dado foi apagado", correct: false },
+          { letter: "D", text: "D: O Excel travou", correct: false }
+        ]
+      },
+      {
+        text: "6/10: Se uma meta de R$ 80.000 teve 75% de atingimento, qual valor foi faturado?",
+        options: [
+          { letter: "A", text: "A: R$ 55.000", correct: false },
+          { letter: "B", text: "B: R$ 60.000", correct: true },
+          { letter: "C", text: "C: R$ 65.000", correct: false },
+          { letter: "D", text: "D: R$ 70.000", correct: false }
+        ]
+      },
+      {
+        text: "7/10: Qual função calcula a MÉDIA de vendas no intervalo de células B2 até B10?",
+        options: [
+          { letter: "A", text: "A: =SOMAR(B2:B10)/2", correct: false },
+          { letter: "B", text: "B: =MÉDIA(B2:B10)", correct: true },
+          { letter: "C", text: "C: =MEDIANA(B2:B10)", correct: false },
+          { letter: "D", text: "D: =CALCULAR(B2:B10)", correct: false }
+        ]
+      },
+      {
+        text: "8/10: O erro '#N/N' ou '#N/A' na tabela de relatório de vendas indica que:",
+        options: [
+          { letter: "A", text: "A: O valor procurado não foi achado", correct: true },
+          { letter: "B", text: "B: Número negativo", correct: false },
+          { letter: "C", text: "C: Campo obrigatório", correct: false },
+          { letter: "D", text: "D: Divisão inválida", correct: false }
+        ]
+      },
+      {
+        text: "9/10: Um desconto sucessivo de 10% mais 10% sobre R$ 100,00 resulta em qual valor final?",
+        options: [
+          { letter: "A", text: "A: R$ 80,00", correct: false },
+          { letter: "B", text: "B: R$ 81,00", correct: true },
+          { letter: "C", text: "C: R$ 82,00", correct: false },
+          { letter: "D", text: "D: R$ 85,00", correct: false }
+        ]
+      },
+      {
+        text: "10/10 [CHEFÃO]: Meta de R$ 50.000 com 65% atingido. Qual o valor absoluto NÃO VENDIDO no balanço?",
+        options: [
+          { letter: "A", text: "A: R$ 32.500", correct: false },
+          { letter: "B", text: "B: R$ 15.000", correct: false },
+          { letter: "C", text: "C: R$ 17.500", correct: true },
+          { letter: "D", text: "D: R$ 18.200", correct: false }
+        ]
+      }
+    ];
+
+    let canvas, ctx;
+    let currentPhase = 1;
+    let currentQuestionIdx = 0;
+    let lives = 3;
+    let score = 0;
+    let dotsEaten = 0;
+    let gameLoopId = null;
+    let activeQuestions = [];
+    let isGamePaused = false;
+    let isFrozen = false;
+    let freezeTimer = null;
+    let isShielded = false;
+    let shieldTimer = null;
+    let shrinkLevel = 0;
+
+    let pacman = { x: 300, y: 340, radius: 8, speed: 3.2, dx: 0, dy: 0, mouthAngle: 0.2, mouthSpeed: 0.02 };
+    let ghosts = [];
+    let dots = [];
+    let optionNodes = [];
+    let walls = [];
+
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if(e.key === 'p' || e.key === 'P') {
+        togglePause();
+      }
+      if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D'].includes(e.key)){
+        e.preventDefault();
+      }
+    });
+    window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+    function togglePause() {
+      if(document.getElementById('game-screen').classList.contains('hidden')) return;
+      isGamePaused = !isGamePaused;
+      const btnPause = document.getElementById('btn-pause-game');
+      if(isGamePaused) {
+        if(btnPause) btnPause.innerText = "▶ CONTINUAR";
+      } else {
+        if(btnPause) btnPause.innerText = "⏸ PAUSE";
+      }
+    }
+
+    function startGame() {
+      const startScreen = document.getElementById('start-screen');
+      const phaseScreen = document.getElementById('phase-transition-screen');
+      const endScreen = document.getElementById('end-screen');
+      const gameScreen = document.getElementById('game-screen');
+
+      if(startScreen) startScreen.classList.add('hidden');
+      if(phaseScreen) phaseScreen.classList.add('hidden');
+      if(endScreen) endScreen.classList.add('hidden');
+      if(gameScreen) gameScreen.classList.remove('hidden');
+
+      canvas = document.getElementById('gameCanvas');
+      if(canvas) ctx = canvas.getContext('2d');
+      
+      currentPhase = 1;
+      currentQuestionIdx = 0;
+      lives = 3;
+      score = 0;
+      dotsEaten = 0;
+      shrinkLevel = 0;
+      isGamePaused = false;
+      
+      loadPhase(1);
+      if(gameLoopId) cancelAnimationFrame(gameLoopId);
+      gameLoop();
+    }
+
+    function startPhase2() {
+      document.getElementById('phase-transition-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+      
+      currentPhase = 2;
+      currentQuestionIdx = 0;
+      shrinkLevel = 0;
+      isGamePaused = false;
+      
+      loadPhase(2);
+      if(gameLoopId) cancelAnimationFrame(gameLoopId);
+      gameLoop();
+    }
+
+    function resetGame() {
+      startGame();
+    }
+
+    function loadPhase(phase) {
+      activeQuestions = (phase === 1) ? questionsPhase1 : questionsPhase2;
+      currentQuestionIdx = 0;
+      shrinkLevel = 0;
+      setupQuestion();
+      setupMap();
+    }
+
+    function setupQuestion() {
+      const q = activeQuestions[currentQuestionIdx];
+      const isBoss = (currentPhase === 2 && currentQuestionIdx === 9);
+      
+      const elLevel = document.getElementById('hud-level');
+      const elLives = document.getElementById('hud-lives');
+      const elScore = document.getElementById('hud-score');
+      const elDots = document.getElementById('hud-dots');
+      const elQPhase = document.getElementById('q-phase');
+      const elQText = document.getElementById('q-text');
+
+      if(elLevel) elLevel.innerText = currentPhase + (isBoss ? " (CHEFÃO)" : "");
+      if(elLives) elLives.innerText = '❤️'.repeat(lives);
+      if(elScore) elScore.innerText = score;
+      if(elDots) elDots.innerText = dotsEaten;
+
+      if(elQPhase) elQPhase.innerText = `FASE ${currentPhase} - QUESTÃO ${currentQuestionIdx + 1}/${activeQuestions.length}`;
+      if(elQText) elQText.innerText = q.text;
+
+      const margin = 15 + (shrinkLevel * 10);
+      const w = canvas ? canvas.width : 600;
+      const h = canvas ? canvas.height : 400;
+
+      const optW = Math.max(70, 95 - shrinkLevel * 2);
+      const optH = Math.max(22, 26 - shrinkLevel);
+
+      const positions = [
+        { x: margin + optW/2 + 15, y: margin + optH/2 + 10 },
+        { x: w - margin - optW/2 - 15, y: margin + optH/2 + 10 },
+        { x: margin + optW/2 + 15, y: h - margin - optH/2 - 10 },
+        { x: w - margin - optW/2 - 15, y: h - margin - optH/2 - 10 }
       ];
 
-      const questionsPhase2 = [
-        {
-          text: "1/10: Um erro comum em tabelas é a divisão por zero (#DIV/0!). Como tratar esse erro na fórmula?",
-          options: [
-            { letter: "A", text: "A: Usar =SEERRO()", correct: true },
-            { letter: "B", text: "B: Excluir a linha", correct: false },
-            { letter: "C", text: "C: Somar +1 no divisor", correct: false },
-            { letter: "D", text: "D: Apagar a célula", correct: false }
-          ]
-        },
-        {
-          text: "2/10: Uma loja vendeu R$ 40.000 no mês. Qual a porcentagem referente ao produto X que faturou R$ 10.000?",
-          options: [
-            { letter: "A", text: "A: 15%", correct: false },
-            { letter: "B", text: "B: 20%", correct: false },
-            { letter: "C", text: "C: 25%", correct: true },
-            { letter: "D", text: "D: 30%", correct: false }
-          ]
-        },
-        {
-          text: "3/10: O erro '#VALOR!' em uma tabela de vendas geralmente acontece quando:",
-          options: [
-            { letter: "A", text: "A: A coluna é estreita", correct: false },
-            { letter: "B", text: "B: Há texto em cálculo matemático", correct: true },
-            { letter: "C", text: "C: A célula está vazia", correct: false },
-            { letter: "D", text: "D: O arquivo foi fechado", correct: false }
-          ]
-        },
-        {
-          text: "4/10: Para calcular um acréscimo de 15% sobre o preço de custo na célula C4, qual fórmula usar?",
-          options: [
-            { letter: "A", text: "A: =C4 * 1,15", correct: true },
-            { letter: "B", text: "B: =C4 + 15", correct: false },
-            { letter: "C", text: "C: =C4 * 15%", correct: false },
-            { letter: "D", text: "D: =C4 / 1,15", correct: false }
-          ]
-        },
-        {
-          text: "5/10: Na planilha de controle de estoque, o erro '##### ' significa que:",
-          options: [
-            { letter: "A", text: "A: A fórmula está errada", correct: false },
-            { letter: "B", text: "B: A coluna é curta para o valor", correct: true },
-            { letter: "C", text: "C: O dado foi apagado", correct: false },
-            { letter: "D", text: "D: O Excel travou", correct: false }
-          ]
-        },
-        {
-          text: "6/10: Se uma meta de R$ 80.000 teve 75% de atingimento, qual valor foi faturado?",
-          options: [
-            { letter: "A", text: "A: R$ 55.000", correct: false },
-            { letter: "B", text: "B: R$ 60.000", correct: true },
-            { letter: "C", text: "C: R$ 65.000", correct: false },
-            { letter: "D", text: "D: R$ 70.000", correct: false }
-          ]
-        },
-        {
-          text: "7/10: Qual função calcula a MÉDIA de vendas no intervalo de células B2 até B10?",
-          options: [
-            { letter: "A", text: "A: =SOMAR(B2:B10)/2", correct: false },
-            { letter: "B", text: "B: =MÉDIA(B2:B10)", correct: true },
-            { letter: "C", text: "C: =MEDIANA(B2:B10)", correct: false },
-            { letter: "D", text: "D: =CALCULAR(B2:B10)", correct: false }
-          ]
-        },
-        {
-          text: "8/10: O erro '#N/N' ou '#N/A' na tabela de relatório de vendas indica que:",
-          options: [
-            { letter: "A", text: "A: O valor procurado não foi achado", correct: true },
-            { letter: "B", text: "B: Número negativo", correct: false },
-            { letter: "C", text: "C: Campo obrigatório", correct: false },
-            { letter: "D", text: "D: Divisão inválida", correct: false }
-          ]
-        },
-        {
-          text: "9/10: Um desconto sucessivo de 10% mais 10% sobre R$ 100,00 resulta em qual valor final?",
-          options: [
-            { letter: "A", text: "A: R$ 80,00", correct: false },
-            { letter: "B", text: "B: R$ 81,00", correct: true },
-            { letter: "C", text: "C: R$ 82,00", correct: false },
-            { letter: "D", text: "D: R$ 85,00", correct: false }
-          ]
-        },
-        {
-          text: "10/10 [CHEFÃO]: Meta de R$ 50.000 com 65% atingido. Qual o valor absoluto NÃO VENDIDO no balanço?",
-          options: [
-            { letter: "A", text: "A: R$ 32.500", correct: false },
-            { letter: "B", text: "B: R$ 15.000", correct: false },
-            { letter: "C", text: "C: R$ 17.500", correct: true },
-            { letter: "D", text: "D: R$ 18.200", correct: false }
-          ]
-        }
+      optionNodes = q.options.map((opt, i) => ({
+        x: positions[i].x,
+        y: positions[i].y,
+        width: optW,
+        height: optH,
+        text: opt.text,
+        correct: opt.correct
+      }));
+
+      updateShopButtons();
+    }
+
+    function setupMap() {
+      if(!canvas) return;
+      const minX = 15 + (shrinkLevel * 10);
+      const maxX = canvas.width - 15 - (shrinkLevel * 10);
+      const minY = 15 + (shrinkLevel * 10);
+      const maxY = canvas.height - 15 - (shrinkLevel * 10);
+
+      const mapWidth = maxX - minX;
+      const mapHeight = maxY - minY;
+      const centerX = minX + mapWidth / 2;
+      const centerY = minY + mapHeight / 2;
+
+      let allWalls = [
+        { id: 1, x: centerX - mapWidth * 0.12, y: centerY + mapHeight * 0.05, w: mapWidth * 0.24, h: mapHeight * 0.08 },
+        { id: 2, x: minX + mapWidth * 0.12, y: minY + mapHeight * 0.18, w: mapWidth * 0.14, h: mapHeight * 0.08 },
+        { id: 3, x: maxX - mapWidth * 0.26, y: minY + mapHeight * 0.18, w: mapWidth * 0.14, h: mapHeight * 0.08 },
+        { id: 4, x: centerX - mapWidth * 0.08, y: minY + mapHeight * 0.08, w: mapWidth * 0.16, h: mapHeight * 0.06 },
+        { id: 5, x: minX + mapWidth * 0.12, y: minY + mapHeight * 0.38, w: mapWidth * 0.14, h: mapHeight * 0.06 },
+        { id: 6, x: maxX - mapWidth * 0.26, y: minY + mapHeight * 0.38, w: mapWidth * 0.14, h: mapHeight * 0.06 },
+        { id: 7, x: minX + mapWidth * 0.32, y: minY + mapHeight * 0.25, w: mapWidth * 0.05, h: mapHeight * 0.20 },
+        { id: 8, x: maxX - mapWidth * 0.37, y: minY + mapHeight * 0.25, w: mapWidth * 0.05, h: mapHeight * 0.20 },
+        { id: 9, x: centerX - mapWidth * 0.18, y: maxY - mapHeight * 0.30, w: mapWidth * 0.36, h: mapHeight * 0.05 },
+        { id: 10, x: minX + mapWidth * 0.12, y: maxY - mapHeight * 0.20, w: mapWidth * 0.14, h: mapHeight * 0.06 },
+        { id: 11, x: maxX - mapWidth * 0.26, y: maxY - mapHeight * 0.20, w: mapWidth * 0.14, h: mapHeight * 0.06 }
       ];
 
-      const canvas = document.getElementById('gameCanvas');
-      const ctx = canvas.getContext('2d');
+      const wallsToKeep = Math.max(2, allWalls.length - currentQuestionIdx);
+      walls = allWalls.slice(0, wallsToKeep);
 
-      let currentPhase = 1;
-      let currentQuestionIdx = 0;
-      let lives = 3;
-      let score = 0;
-      let dotsEaten = 0;
-      let gameLoopId = null;
-      let activeQuestions = [];
-      let isGamePaused = false;
-      let isFrozen = false;
-      let freezeTimer = null;
-      let isShielded = false;
-      let shieldTimer = null;
-      let shrinkLevel = 0;
+      pacman.x = centerX;
+      pacman.y = maxY - 20;
+      pacman.dx = 0;
+      pacman.dy = 0;
 
-      let pacman = { x: 300, y: 340, radius: 8, speed: 3.2, dx: 0, dy: 0, mouthAngle: 0.2, mouthSpeed: 0.02 };
-      let ghosts = [];
-      let dots = [];
-      let optionNodes = [];
-      let walls = [];
-
-      const keys = {};
-      window.addEventListener('keydown', e => {
-        keys[e.key] = true;
-        if(e.key === 'p' || e.key === 'P') {
-          togglePause();
-        }
-        if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D'].includes(e.key)){
-          e.preventDefault();
-        }
-      });
-      window.addEventListener('keyup', e => { keys[e.key] = false; });
-
-      document.getElementById('btn-start-game').addEventListener('click', startGame);
-      document.getElementById('btn-start-phase2').addEventListener('click', startPhase2);
-      document.getElementById('btn-restart-game').addEventListener('click', resetGame);
-      document.getElementById('btn-pause-game').addEventListener('click', togglePause);
-      document.getElementById('btn-power-shield').addEventListener('click', () => buyPowerUp('shield'));
-      document.getElementById('btn-power-freeze').addEventListener('click', () => buyPowerUp('freeze'));
-
-      function togglePause() {
-        if(document.getElementById('game-screen').classList.contains('hidden')) return;
-        isGamePaused = !isGamePaused;
-        const btnPause = document.getElementById('btn-pause-game');
-        if(isGamePaused) {
-          btnPause.innerText = "▶ CONTINUAR";
-          btnPause.style.background = "linear-gradient(180deg, #00ff88 0%, #00a355 100%)";
-        } else {
-          btnPause.innerText = "⏸ PAUSE";
-          btnPause.style.background = "linear-gradient(180deg, #ff3366 0%, #a30029 100%)";
-        }
+      let attempts = 0;
+      while (checkWallCollision(pacman.x, pacman.y, pacman.radius + 2) && attempts < 20) {
+        pacman.y -= 5;
+        attempts++;
       }
 
-      function startGame() {
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('phase-transition-screen').classList.add('hidden');
-        document.getElementById('end-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
+      ghosts = [];
+      const numGhosts = (currentPhase === 1) ? 1 : Math.max(1, 10 - currentQuestionIdx); 
+      const ghostColors = ['#ff0000', '#ffb8ff', '#00ffff', '#ffb852', '#00ff00', '#purple', '#orange', '#pink', '#yellow', '#white'];
+
+      for(let i = 0; i < numGhosts; i++) {
+        let gx = centerX + ((i % 4) - 1.5) * 35;
+        let gy = minY + mapHeight * 0.3 + (Math.floor(i / 4) * 25);
         
-        currentPhase = 1;
-        currentQuestionIdx = 0;
-        lives = 3;
-        score = 0;
-        dotsEaten = 0;
-        shrinkLevel = 0;
-        isGamePaused = false;
-        
-        loadPhase(1);
-        if(gameLoopId) cancelAnimationFrame(gameLoopId);
-        gameLoop();
-      }
-
-      function startPhase2() {
-        document.getElementById('phase-transition-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        
-        currentPhase = 2;
-        currentQuestionIdx = 0;
-        shrinkLevel = 0;
-        isGamePaused = false;
-        
-        loadPhase(2);
-        if(gameLoopId) cancelAnimationFrame(gameLoopId);
-        gameLoop();
-      }
-
-      function resetGame() {
-        startGame();
-      }
-
-      function loadPhase(phase) {
-        activeQuestions = (phase === 1) ? questionsPhase1 : questionsPhase2;
-        currentQuestionIdx = 0;
-        shrinkLevel = 0;
-        setupQuestion();
-        setupMap();
-      }
-
-      function setupQuestion() {
-        const q = activeQuestions[currentQuestionIdx];
-        const isBoss = (currentPhase === 2 && currentQuestionIdx === 9);
-        
-        document.getElementById('hud-level').innerText = currentPhase + (isBoss ? " (CHEFÃO)" : "");
-        document.getElementById('hud-lives').innerText = '❤️'.repeat(lives);
-        document.getElementById('hud-score').innerText = score;
-        document.getElementById('hud-dots').innerText = dotsEaten;
-
-        document.getElementById('q-phase').innerText = `FASE ${currentPhase} - QUESTÃO ${currentQuestionIdx + 1}/${activeQuestions.length}`;
-        document.getElementById('q-text').innerText = q.text;
-
-        const margin = 15 + (shrinkLevel * 10);
-        const w = canvas.width;
-        const h = canvas.height;
-
-        const optW = Math.max(70, 95 - shrinkLevel * 2);
-        const optH = Math.max(22, 26 - shrinkLevel);
-
-        const positions = [
-          { x: margin + optW/2 + 15, y: margin + optH/2 + 10 },
-          { x: w - margin - optW/2 - 15, y: margin + optH/2 + 10 },
-          { x: margin + optW/2 + 15, y: h - margin - optH/2 - 10 },
-          { x: w - margin - optW/2 - 15, y: h - margin - optH/2 - 10 }
-        ];
-
-        optionNodes = q.options.map((opt, i) => ({
-          x: positions[i].x,
-          y: positions[i].y,
-          width: optW,
-          height: optH,
-          text: opt.text,
-          correct: opt.correct
-        }));
-
-        updateShopButtons();
-      }
-
-      function setupMap() {
-        const minX = 15 + (shrinkLevel * 10);
-        const maxX = canvas.width - 15 - (shrinkLevel * 10);
-        const minY = 15 + (shrinkLevel * 10);
-        const maxY = canvas.height - 15 - (shrinkLevel * 10);
-
-        const mapWidth = maxX - minX;
-        const mapHeight = maxY - minY;
-        const centerX = minX + mapWidth / 2;
-        const centerY = minY + mapHeight / 2;
-
-        let allWalls = [
-          { id: 1, x: centerX - mapWidth * 0.12, y: centerY + mapHeight * 0.05, w: mapWidth * 0.24, h: mapHeight * 0.08 },
-          { id: 2, x: minX + mapWidth * 0.12, y: minY + mapHeight * 0.18, w: mapWidth * 0.14, h: mapHeight * 0.08 },
-          { id: 3, x: maxX - mapWidth * 0.26, y: minY + mapHeight * 0.18, w: mapWidth * 0.14, h: mapHeight * 0.08 },
-          { id: 4, x: centerX - mapWidth * 0.08, y: minY + mapHeight * 0.08, w: mapWidth * 0.16, h: mapHeight * 0.06 },
-          { id: 5, x: minX + mapWidth * 0.12, y: minY + mapHeight * 0.38, w: mapWidth * 0.14, h: mapHeight * 0.06 },
-          { id: 6, x: maxX - mapWidth * 0.26, y: minY + mapHeight * 0.38, w: mapWidth * 0.14, h: mapHeight * 0.06 },
-          { id: 7, x: minX + mapWidth * 0.32, y: minY + mapHeight * 0.25, w: mapWidth * 0.05, h: mapHeight * 0.20 },
-          { id: 8, x: maxX - mapWidth * 0.37, y: minY + mapHeight * 0.25, w: mapWidth * 0.05, h: mapHeight * 0.20 },
-          { id: 9, x: centerX - mapWidth * 0.18, y: maxY - mapHeight * 0.30, w: mapWidth * 0.36, h: mapHeight * 0.05 },
-          { id: 10, x: minX + mapWidth * 0.12, y: maxY - mapHeight * 0.20, w: mapWidth * 0.14, h: mapHeight * 0.06 },
-          { id: 11, x: maxX - mapWidth * 0.26, y: maxY - mapHeight * 0.20, w: mapWidth * 0.14, h: mapHeight * 0.06 }
-        ];
-
-        const wallsToKeep = Math.max(2, allWalls.length - currentQuestionIdx);
-        walls = allWalls.slice(0, wallsToKeep);
-
-        pacman.x = centerX;
-        pacman.y = maxY - 20;
-        pacman.dx = 0;
-        pacman.dy = 0;
-
-        let attempts = 0;
-        while (checkWallCollision(pacman.x, pacman.y, pacman.radius + 2) && attempts < 20) {
-          pacman.y -= 5;
-          attempts++;
+        if (i === 0 && currentPhase === 1) {
+          gx = centerX; gy = minY + mapHeight * 0.35;
         }
 
-        ghosts = [];
-        const numGhosts = (currentPhase === 1) ? 1 : Math.max(1, 10 - currentQuestionIdx); 
-        const ghostColors = ['#ff0000', '#ffb8ff', '#00ffff', '#ffb852', '#00ff00', '#purple', '#orange', '#pink', '#yellow', '#white'];
+        const isBoss = (currentPhase === 2 && currentQuestionIdx === 9 && i === 0);
 
-        for(let i = 0; i < numGhosts; i++) {
-          let gx = centerX + ((i % 4) - 1.5) * 35;
-          let gy = minY + mapHeight * 0.3 + (Math.floor(i / 4) * 25);
-          
-          if (i === 0 && currentPhase === 1) {
-            gx = centerX; gy = minY + mapHeight * 0.35;
-          }
-
-          const isBoss = (currentPhase === 2 && currentQuestionIdx === 9 && i === 0);
-
-          ghosts.push({
-            x: gx,
-            y: gy,
-            radius: 8,
-            color: isBoss ? '#ff0055' : ghostColors[i % ghostColors.length],
-            isBoss: isBoss,
-            speed: isBoss ? 2.5 : (1.4 + Math.random() * 0.6),
-            dx: (i % 2 === 0 ? 1 : -1),
-            dy: (i % 3 === 0 ? 1 : -1),
-            stuckCounter: 0
-          });
-        }
-
-        dots = [];
-        const step = 25;
-        for(let x = minX + 20; x < maxX - 20; x += step) {
-          for(let y = minY + 20; y < maxY - 20; y += step) {
-            let insideWall = walls.some(w => x > w.x - 8 && x < w.x + w.w + 8 && y > w.y - 8 && y < w.y + w.h + 8);
-            let nearOption = optionNodes.some(opt => Math.hypot(x - opt.x, y - opt.y) < opt.width / 2 + 12);
-            
-            if(!insideWall && !nearOption && Math.random() > 0.25) {
-              dots.push({ x: x, y: y, radius: 2.2, eaten: false });
-            }
-          }
-        }
-      }
-
-      function gameLoop() {
-        if (!isGamePaused) {
-          update();
-        }
-        render();
-        gameLoopId = requestAnimationFrame(gameLoop);
-      }
-
-      function checkWallCollision(newX, newY, radius) {
-        const minX = 15 + (shrinkLevel * 10) + radius;
-        const maxX = canvas.width - 15 - (shrinkLevel * 10) - radius;
-        const minY = 15 + (shrinkLevel * 10) + radius;
-        const maxY = canvas.height - 15 - (shrinkLevel * 10) - radius;
-
-        if (newX < minX || newX > maxX || newY < minY || newY > maxY) return true;
-
-        return walls.some(w => 
-          newX + radius > w.x && newX - radius < w.x + w.w &&
-          newY + radius > w.y && newY - radius < w.y + w.h
-        );
-      }
-
-      function update() {
-        let desiredDx = 0;
-        let desiredDy = 0;
-
-        if (keys['ArrowLeft'] || keys['a'] || keys['A']) desiredDx = -pacman.speed;
-        else if (keys['ArrowRight'] || keys['d'] || keys['D']) desiredDx = pacman.speed;
-
-        if (keys['ArrowUp'] || keys['w'] || keys['W']) desiredDy = -pacman.speed;
-        else if (keys['ArrowDown'] || keys['s'] || keys['S']) desiredDy = pacman.speed;
-
-        if (desiredDx !== 0 && !checkWallCollision(pacman.x + desiredDx, pacman.y, pacman.radius)) {
-          pacman.x += desiredDx;
-          pacman.dx = desiredDx;
-        } else {
-          pacman.dx = 0;
-        }
-
-        if (desiredDy !== 0 && !checkWallCollision(pacman.x, pacman.y + desiredDy, pacman.radius)) {
-          pacman.y += desiredDy;
-          pacman.dy = desiredDy;
-        } else {
-          pacman.dy = 0;
-        }
-
-        pacman.mouthAngle += pacman.mouthSpeed;
-        if (pacman.mouthAngle > 0.4 || pacman.mouthAngle < 0.05) {
-          pacman.mouthSpeed = -pacman.mouthSpeed;
-        }
-
-        dots.forEach(dot => {
-          if (!dot.eaten && Math.hypot(pacman.x - dot.x, pacman.y - dot.y) < pacman.radius + dot.radius + 2) {
-            dot.eaten = true;
-            score += 10;
-            dotsEaten += 1;
-            document.getElementById('hud-score').innerText = score;
-            document.getElementById('hud-dots').innerText = dotsEaten;
-            updateShopButtons();
-          }
-        });
-
-        if (!isFrozen) {
-          ghosts.forEach(g => {
-            if (g.isBoss) {
-              const angle = Math.atan2(pacman.y - g.y, pacman.x - g.x);
-              let gx = g.x + Math.cos(angle) * g.speed;
-              let gy = g.y + Math.sin(angle) * g.speed;
-              
-              if(!checkWallCollision(gx, gy, g.radius)) {
-                g.x = gx;
-                g.y = gy;
-              } else {
-                if(!checkWallCollision(gx, g.y, g.radius)) g.x = gx;
-                else if(!checkWallCollision(g.x, gy, g.radius)) g.y = gy;
-              }
-            } else {
-              let nextGx = g.x + g.dx * g.speed;
-              let nextGy = g.y + g.dy * g.speed;
-
-              let hitX = checkWallCollision(nextGx, g.y, g.radius);
-              let hitY = checkWallCollision(g.x, nextGy, g.radius);
-
-              if (hitX) {
-                g.dx *= -1;
-                g.dy = (Math.random() > 0.5 ? 1 : -1);
-              } else {
-                g.x = nextGx;
-              }
-
-              if (hitY) {
-                g.dy *= -1;
-                g.dx = (Math.random() > 0.5 ? 1 : -1);
-              } else {
-                g.y = nextGy;
-              }
-
-              if (hitX && hitY) {
-                g.stuckCounter++;
-                if (g.stuckCounter > 30) {
-                  g.dx = (Math.random() > 0.5 ? 1 : -1);
-                  g.dy = (Math.random() > 0.5 ? 1 : -1);
-                  g.stuckCounter = 0;
-                }
-              } else {
-                g.stuckCounter = 0;
-              }
-            }
-
-            if (!isShielded && Math.hypot(pacman.x - g.x, pacman.y - g.y) < pacman.radius + g.radius + 1) {
-              handleHit();
-            }
-          });
-        }
-
-        optionNodes.forEach(opt => {
-          const halfW = opt.width / 2;
-          const halfH = opt.height / 2;
-          if (pacman.x > opt.x - halfW && pacman.x < opt.x + halfW &&
-              pacman.y > opt.y - halfH && pacman.y < opt.y + halfH) {
-            
-            if (opt.correct) {
-              handleCorrectAnswer();
-            } else {
-              handleHit();
-            }
-          }
+        ghosts.push({
+          x: gx,
+          y: gy,
+          radius: 8,
+          color: isBoss ? '#ff0055' : ghostColors[i % ghostColors.length],
+          isBoss: isBoss,
+          speed: isBoss ? 2.5 : (1.4 + Math.random() * 0.6),
+          dx: (i % 2 === 0 ? 1 : -1),
+          dy: (i % 3 === 0 ? 1 : -1),
+          stuckCounter: 0
         });
       }
 
-      function handleHit() {
-        lives--;
-        document.getElementById('hud-lives').innerText = '❤️'.repeat(lives);
-
-        if (lives <= 0) {
-          gameOver();
-        } else {
-          const minX = 15 + (shrinkLevel * 10);
-          const maxX = canvas.width - 15 - (shrinkLevel * 10);
-          const minY = 15 + (shrinkLevel * 10);
-          const maxY = canvas.height - 15 - (shrinkLevel * 10);
-
-          pacman.x = minX + (maxX - minX) / 2;
-          pacman.y = maxY - 20;
-        }
-      }
-
-      function handleCorrectAnswer() {
-        score += 100;
-        document.getElementById('hud-score').innerText = score;
-        currentQuestionIdx++;
-
-        if (currentQuestionIdx >= activeQuestions.length) {
-          if (currentPhase === 1) {
-            cancelAnimationFrame(gameLoopId);
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('phase-transition-screen').classList.remove('hidden');
-          } else {
-            victory();
-          }
-        } else {
-          if (currentPhase === 2) {
-            shrinkLevel++;
-          }
-          setupQuestion();
-          setupMap();
-        }
-      }
-
-      function buyPowerUp(type) {
-        if (type === 'shield' && dotsEaten >= 10) {
-          dotsEaten -= 10;
-          isShielded = true;
-          document.getElementById('hud-dots').innerText = dotsEaten;
-          updateShopButtons();
-          if(shieldTimer) clearTimeout(shieldTimer);
-          shieldTimer = setTimeout(() => { isShielded = false; }, 5000);
-        } else if (type === 'freeze' && dotsEaten >= 30) {
-          dotsEaten -= 30;
-          isFrozen = true;
-          document.getElementById('hud-dots').innerText = dotsEaten;
-          updateShopButtons();
-          if(freezeTimer) clearTimeout(freezeTimer);
-          freezeTimer = setTimeout(() => { isFrozen = false; }, 4000);
-        }
-      }
-
-      function updateShopButtons() {
-        document.getElementById('btn-power-shield').disabled = dotsEaten < 10;
-        document.getElementById('btn-power-freeze').disabled = dotsEaten < 30;
-      }
-
-      function gameOver() {
-        cancelAnimationFrame(gameLoopId);
-        document.getElementById('game-screen').classList.add('hidden');
-        document.getElementById('end-screen').classList.remove('hidden');
-        document.getElementById('end-title').innerText = "GAME OVER";
-        document.getElementById('end-title').style.color = "#ff3366";
-        document.getElementById('end-message').innerText = `Você perdeu todas as vidas! Pontuação Final: ${score}`;
-      }
-
-      function victory() {
-        cancelAnimationFrame(gameLoopId);
-        initConfetti();
-        document.getElementById('game-screen').classList.add('hidden');
-        document.getElementById('end-screen').classList.remove('hidden');
-        document.getElementById('end-title').innerText = "VITÓRIA EXCELENTE!";
-        document.getElementById('end-title').style.color = "#00ff88";
-        document.getElementById('end-message').innerHTML = `Parabéns Equipe SENAI TGDQ!<br>Vocês completaram o labirinto e derrotaram o Chefão!<br><strong>Pontuação Final: ${score}</strong>`;
-        renderConfetti();
-      }
-
-      function renderConfetti() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        confettiParticles.forEach(p => {
-          ctx.fillStyle = p.color;
-          ctx.fillRect(p.x, p.y, p.size, p.size);
-          p.y += p.speedY;
-          p.x += p.speedX;
-          if(p.y > canvas.height) p.y = -10;
-        });
-        if (!document.getElementById('end-screen').classList.contains('hidden')) {
-          requestAnimationFrame(requestAnimationFrame ? renderConfetti : null);
-        }
-      }
-
-      function render() {
-        ctx.fillStyle = '#05070a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const minX = 15 + (shrinkLevel * 10);
-        const maxX = canvas.width - 15 - (shrinkLevel * 10);
-        const minY = 15 + (shrinkLevel * 10);
-        const maxY = canvas.height - 15 - (shrinkLevel * 10);
-
-        ctx.strokeStyle = (currentPhase === 2 && currentQuestionIdx === 9) ? '#ff3366' : '#1919a6';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-
-        ctx.fillStyle = '#0a0d2c';
-        ctx.strokeStyle = '#2121ff';
-        ctx.lineWidth =
+      dots = [];
+      const step = 25;
+      for(let x = minX + 20; x < maxX - 20; x += step) {
+        for(let y = minY + 20; y < maxY - 20; y += step) {
+          let insideWall = walls.some(w => x > w.x - 8 && x < w.x + w.w + 8 && y > w.y - 8 && y < w.y + w.h + 8
