@@ -68,9 +68,9 @@
         • Use o Pac-Man para navegar pelos <strong>corredores do labirinto</strong> e resolver desafios!<br>
         • Coma a alternativa correta <strong>[A], [B], [C] ou [D]</strong> posicionada no mapa!<br>
         • Evite os fantasmas auditores. Responder errado custa <strong>1 VIDA (❤️)</strong>.<br>
-        • A cada resposta certa, <strong>1 parede é removida</strong>!<br>
+        • Na Fase 2, cada resposta certa elimina 1 dos 10 fantasmas!<br>
         • <strong>Fase 1:</strong> Labirinto com 1 fantasma.<br>
-        • <strong>Fase 2 (Chefão):</strong> 10 Perguntas avançadas!
+        • <strong>Fase 2 (Chefão):</strong> 10 Perguntas e 10 fantasmas! O último te persegue direto!
       </div>
       <button class="btn" id="main-start-btn">INICIAR JOGO</button>
     </div>
@@ -257,10 +257,24 @@
       pacman.y = maxY - 20;
       pacman.dx = 0; pacman.dy = 0;
 
-      ghosts = [{
-        x: cx, y: minY + 50, radius: 8, color: (currentPhase === 2 && currentQIdx === 9)? '#ff3366' : '#ff0000',
-        speed: (currentPhase === 2 && currentQIdx === 9)? 2.2 : 1.5, dx: 1, dy: 1
-      }];
+      // Configuração dos Fantasmas:
+      // Fase 1: Apenas 1 fantasma.
+      // Fase 2: Começa com 10 fantasmas (um para cada pergunta restante). A cada pergunta resolvida, o array diminui (restam 10 - currentQIdx).
+      ghosts = [];
+      let numGhosts = (currentPhase === 1) ? 1 : (10 - currentQIdx);
+      
+      for(let i = 0; i < numGhosts; i++) {
+        let isLastChefao = (currentPhase === 2 && currentQIdx === 9);
+        ghosts.push({
+          x: cx + (i * 15 - 30), 
+          y: minY + 50 + (i * 10), 
+          radius: 8, 
+          color: isLastChefao ? '#ff3366' : (i % 2 === 0 ? '#ff0000' : '#ffb8ff'),
+          speed: isLastChefao ? 2.2 : 1.5, 
+          dx: (i % 2 === 0) ? 1 : -1, 
+          dy: (i % 3 === 0) ? 1 : -1
+        });
+      }
 
       dots = [];
       for(let x = minX + 25; x < maxX - 25; x += 30) {
@@ -311,11 +325,23 @@
       });
 
       if(!isFrozen) {
+        let isLastChefao = (currentPhase === 2 && currentQIdx === 9);
+
         ghosts.forEach(g => {
-          let gx = g.x + g.dx * g.speed;
-          let gy = g.y + g.dy * g.speed;
-          if(checkCollision(gx, g.y, g.radius)) g.dx *= -1; else g.x = gx;
-          if(checkCollision(g.x, gy, g.radius)) g.dy *= -1; else g.y = gy;
+          // Se for o último fantasma da Fase 2 (Chefão), ele persegue o Pac-Man diretamente!
+          if (isLastChefao) {
+            let angle = Math.atan2(pacman.y - g.y, pacman.x - g.x);
+            let gx = g.x + Math.cos(angle) * g.speed;
+            let gy = g.y + Math.sin(angle) * g.speed;
+            if (!checkCollision(gx, g.y, g.radius)) g.x = gx;
+            if (!checkCollision(g.x, gy, g.radius)) g.y = gy;
+          } else {
+            // Movimento normal de patrulha dos demais fantasmas
+            let gx = g.x + g.dx * g.speed;
+            let gy = g.y + g.dy * g.speed;
+            if(checkCollision(gx, g.y, g.radius)) g.dx *= -1; else g.x = gx;
+            if(checkCollision(g.x, gy, g.radius)) g.dy *= -1; else g.y = gy;
+          }
 
           if(!isShielded && Math.hypot(pacman.x - g.x, pacman.y - g.y) < pacman.radius + g.radius) {
             lives--;
