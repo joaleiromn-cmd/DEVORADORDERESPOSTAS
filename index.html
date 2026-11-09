@@ -253,13 +253,11 @@
         { x: maxX - 100, y: maxY - 65, w: 70, h: 25 }
       ].slice(0, Math.max(1, 5 - currentQIdx));
 
+      // Posiciona o Pac-Man centralizado de forma segura dentro da borda atual
       pacman.x = cx;
-      pacman.y = maxY - 20;
+      pacman.y = maxY - 25;
       pacman.dx = 0; pacman.dy = 0;
 
-      // Configuração dos Fantasmas:
-      // Fase 1: Apenas 1 fantasma.
-      // Fase 2: Começa com 10 fantasmas (um para cada pergunta restante). A cada pergunta resolvida, o array diminui (restam 10 - currentQIdx).
       ghosts = [];
       let numGhosts = (currentPhase === 1) ? 1 : (10 - currentQIdx);
       
@@ -328,7 +326,6 @@
         let isLastChefao = (currentPhase === 2 && currentQIdx === 9);
 
         ghosts.forEach(g => {
-          // Se for o último fantasma da Fase 2 (Chefão), ele persegue o Pac-Man diretamente!
           if (isLastChefao) {
             let angle = Math.atan2(pacman.y - g.y, pacman.x - g.x);
             let gx = g.x + Math.cos(angle) * g.speed;
@@ -336,7 +333,6 @@
             if (!checkCollision(gx, g.y, g.radius)) g.x = gx;
             if (!checkCollision(g.x, gy, g.radius)) g.y = gy;
           } else {
-            // Movimento normal de patrulha dos demais fantasmas
             let gx = g.x + g.dx * g.speed;
             let gy = g.y + g.dy * g.speed;
             if(checkCollision(gx, g.y, g.radius)) g.dx *= -1; else g.x = gx;
@@ -353,7 +349,11 @@
               document.getElementById('end-title').innerText = "GAME OVER";
               document.getElementById('end-message').innerText = `Pontuação Final: ${score}`;
             } else {
-              pacman.x = 300; pacman.y = 340;
+              // Reseta o Pac-Man de forma segura no centro do mapa atual (evitando ficar fora da borda)
+              const mCurrent = 15 + (shrinkLevel * 10);
+              pacman.x = 300;
+              pacman.y = (400 - mCurrent) - 20;
+              pacman.dx = 0; pacman.dy = 0;
             }
           }
         });
@@ -388,6 +388,11 @@
               document.getElementById('game-screen').classList.add('hidden');
               document.getElementById('end-screen').classList.remove('hidden');
               document.getElementById('end-title').innerText = "GAME OVER";
+            } else {
+              const mCurrent = 15 + (shrinkLevel * 10);
+              pacman.x = 300;
+              pacman.y = (400 - mCurrent) - 20;
+              pacman.dx = 0; pacman.dy = 0;
             }
           }
         }
