@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comedor de Respostas - SENAI Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b0e14;
+      --card-bg: #151a24;
+      --accent-yellow: #ffe600;
+      --accent-blue: #00d2ff;
+      --accent-red: #ff3366;
+      --accent-green: #00ff88;
+      --senai-blue: #0056a3;
+      --text-color: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Rajdhani', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .retro-font {
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    #game-container {
+      position: relative;
+      width: 900px;
+      max-width: 95vw;
+      background-color: var(--card-bg);
+      border: 4px solid var(--senai-blue);
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0, 86, 163, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    h1 {
+      color: var(--accent-yellow);
+      text-shadow: 3px 3px 0px #000, 0 0 10px rgba(255, 230, 0, 0.5);
+      font-size: 20px;
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+
+    .subtitle {
+      color: var(--accent-blue);
+      font-size: 14px;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .credits-box {
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px dashed var(--senai-blue);
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      width: 90%;
+      font-size: 14px;
+    }
+
+    .credits-box span {
+      color: var(--accent-yellow);
+      font-weight: bold;
+    }
+
+    .rules-list {
+      text-align: left;
+      background: rgba(255, 255, 255, 0.05
