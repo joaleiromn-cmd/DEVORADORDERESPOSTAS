@@ -1,75 +1,429 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Comedor de Respostas - SENAI Edition</title>
   <style>
+    :root {
+      --bg-color: #0b0e14;
+      --card-bg: #151a24;
+      --accent-yellow: #ffe600;
+      --accent-blue: #00d2ff;
+      --accent-red: #ff3366;
+      --accent-green: #00ff88;
+      --senai-blue: #0056a3;
+      --text-color: #ffffff;
+    }
+    * { box-sizing: border-box; user-select: none; }
     body {
-      background-color: #0b0e14;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      margin: 0; padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; overflow-x: hidden;
     }
-    .card {
-      background-color: #151a24;
-      border: 4px solid #0056a3;
-      border-radius: 12px;
-      padding: 30px;
-      text-align: center;
-      max-width: 600px;
-      box-shadow: 0 0 20px rgba(0, 86, 163, 0.5);
+    .retro-font { font-family: 'Courier New', Courier, monospace; font-weight: bold; letter-spacing: 1px; }
+    #game-container {
+      position: relative; width: 900px; max-width: 95vw;
+      background-color: var(--card-bg); border: 4px solid var(--senai-blue);
+      border-radius: 12px; box-shadow: 0 0 25px rgba(0, 86, 163, 0.4);
+      display: flex; flex-direction: column; align-items: center; padding: 15px;
     }
-    h1 { color: #ffe600; font-size: 24px; }
-    p { color: #00d2ff; font-size: 16px; line-height: 1.5; }
-    .btn {
-      background: #ffe600;
-      color: #000;
-      font-weight: bold;
-      font-size: 16px;
-      padding: 15px 30px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 20px;
-      box-shadow: 0 5px 0 #b3a000;
-    }
-    .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #b3a000; }
+    .screen { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
     .hidden { display: none !important; }
+    h1 { color: var(--accent-yellow); text-shadow: 2px 2px 0px #000; font-size: 22px; margin-bottom: 5px; }
+    .subtitle { color: var(--accent-blue); font-size: 14px; margin-bottom: 15px; }
+    .credits-box { background: rgba(0, 0, 0, 0.5); border: 2px dashed var(--senai-blue); border-radius: 8px; padding: 10px 15px; margin-bottom: 15px; width: 90%; font-size: 14px; }
+    .rules-list { text-align: left; background: rgba(255, 255, 255, 0.05); padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; font-size: 15px; line-height: 1.6; }
+    .btn {
+      background: linear-gradient(180deg, #ffea00 0%, #d4a000 100%);
+      color: #000; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 14px;
+      padding: 12px 24px; border: 3px solid #fff; border-radius: 8px; cursor: pointer;
+      box-shadow: 0 5px 0 #886600; margin: 10px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    #hud { width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.6); padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 5px;}
+    .hud-item { font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 12px; }
+    #question-card { width: 100%; background: #1e2638; border: 2px solid var(--accent-blue); border-radius: 8px; padding: 10px 15px; margin-bottom: 10px; text-align: center; }
+    .question-title { font-size: 13px; color: var(--accent-yellow); margin-bottom: 4px; font-weight: bold; }
+    .question-text { font-size: 16px; color: #fff; font-weight: 700; }
+    #canvas-wrapper { border: 3px solid var(--senai-blue); border-radius: 8px; overflow: hidden; background-color: #000; max-width: 100%; }
+    canvas { display: block; max-width: 100%; height: auto; }
+    #shop-bar { width: 100%; display: flex; justify-content: space-around; align-items: center; background: rgba(0, 0, 0, 0.5); border-radius: 8px; padding: 8px; margin-top: 10px; }
   </style>
 </head>
 <body>
+  <div id="game-container">
+    <div id="start-screen" class="screen">
+      <h1 class="retro-font">COMEDOR DE RESPOSTAS</h1>
+      <div class="subtitle retro-font">SENAI EDITION • TGDQ</div>
+      <div class="credits-box">
+        <strong>Curso:</strong> Assistente Administrativo | <strong>Unidade:</strong> SENAI Afonso Pena<br>
+        <strong>Equipe de Devs:</strong> <span>Gustavo Calixto, João Eduardo, Milena Estevem, Nanda Leticia, Rosmary Cedeno</span>
+      </div>
+      <div class="rules-list">
+        <strong>📋 REGRAS E OBJETIVO:</strong><br>
+        • Use o Pac-Man para navegar pelos <strong>corredores do labirinto</strong> e resolver desafios!<br>
+        • Coma a alternativa correta <strong>[A], [B], [C] ou [D]</strong> posicionada no mapa!<br>
+        • Evite os fantasmas auditores. Responder errado custa <strong>1 VIDA (❤️)</strong>.<br>
+        • A cada resposta certa, <strong>1 parede é removida</strong>!<br>
+        • <strong>Fase 1:</strong> Labirinto com 1 fantasma.<br>
+        • <strong>Fase 2 (Chefão):</strong> 10 Perguntas avançadas!
+      </div>
+      <button class="btn" id="main-start-btn">INICIAR JOGO</button>
+    </div>
 
-  <div class="card" id="start-screen">
-    <h1>COMEDOR DE RESPOSTAS</h1>
-    <p><strong>SENAI Afonso Pena • Assistente Administrativo</strong><br>Equipe: Gustavo, João, Milena, Nanda, Rosmary</p>
-    <p>Clique no botão abaixo para iniciar o jogo imediatamente:</p>
-    <button class="btn" onclick="iniciarJogo()">INICIAR JOGO</button>
-  </div>
+    <div id="phase-transition-screen" class="screen hidden">
+      <h1 class="retro-font" style="color: var(--accent-green)">PARABÉNS!</h1>
+      <div class="subtitle retro-font" style="font-size: 16px; margin-top: 10px;">VOCÊ PASSOU PARA A SEGUNDA FASE!</div>
+      <button class="btn" id="phase2-btn">INICIAR PRÓXIMA FASE</button>
+    </div>
 
-  <div class="card hidden" id="game-screen">
-    <h1>JOGO INICIADO COM SUCESSO!</h1>
-    <p>O ambiente do SENAI liberou a execução corretamente.</p>
-    <canvas id="gameCanvas" width="500" height="300" style="background:#000; border:2px solid #0056a3; margin-top:15px;"></canvas>
+    <div id="game-screen" class="screen hidden">
+      <div id="hud">
+        <div class="hud-item">FASE: <span id="hud-level" style="color:var(--accent-yellow)">1</span></div>
+        <div class="hud-item">VIDAS: <span id="hud-lives">❤️❤️❤️</span></div>
+        <div class="hud-item">PONTOS: <span id="hud-score" style="color:var(--accent-green)">0</span></div>
+        <div class="hud-item">BOLINHAS: <span id="hud-dots" style="color:var(--accent-blue)">0</span></div>
+        <div class="hud-item"><button class="btn" style="padding:4px 8px; font-size:10px; margin:0;" id="pause-btn">⏸ PAUSE</button></div>
+      </div>
+      <div id="question-card">
+        <div class="question-title retro-font" id="q-phase">FASE 1 - QUESTÃO 1/2</div>
+        <div class="question-text" id="q-text">Carregando pergunta...</div>
+      </div>
+      <div id="canvas-wrapper">
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+      </div>
+      <div id="shop-bar">
+        <button class="btn" style="padding:6px 10px; font-size:11px; margin:0;" id="shield-btn">ESCUDO (10 pts)</button>
+        <button class="btn" style="padding:6px 10px; font-size:11px; margin:0;" id="freeze-btn">FREEZE (30 pts)</button>
+      </div>
+    </div>
+
+    <div id="end-screen" class="screen hidden">
+      <h1 class="retro-font" id="end-title">VITÓRIA!</h1>
+      <p id="end-message" style="font-size: 18px; margin: 15px 0;"></p>
+      <button class="btn" id="restart-btn">JOGAR NOVAMENTE</button>
+    </div>
   </div>
 
   <script>
-    function iniciarJogo() {
+    const questionsPhase1 = [
+      {
+        text: "Na tabela de vendas de roupas, qual fórmula no Excel representa o cálculo correto de 10% de desconto sobre a célula B2?",
+        options: [
+          { letter: "A", text: "A: =B2 - 10", correct: false },
+          { letter: "B", text: "B: =B2 * 0,10", correct: true },
+          { letter: "C", text: "C: =B2 / 100", correct: false },
+          { letter: "D", text: "D: =SOMA(B2:10%)", correct: false }
+        ]
+      },
+      {
+        text: "Uma planilha indica R$ 2.000 em vendas totais. Se a comissão é de 5%, qual o valor exato a ser pago?",
+        options: [
+          { letter: "A", text: "A: R$ 100,00", correct: true },
+          { letter: "B", text: "B: R$ 200,00", correct: false },
+          { letter: "C", text: "C: R$ 50,00", correct: false },
+          { letter: "D", text: "D: R$ 150,00", correct: false }
+        ]
+      }
+    ];
+
+    const questionsPhase2 = [
+      { text: "1/10: Como tratar o erro de divisão por zero (#DIV/0!)?", options: [{ letter: "A", text: "A: Usar =SEERRO()", correct: true }, { letter: "B", text: "B: Excluir linha", correct: false }, { letter: "C", text: "C: Somar +1", correct: false }, { letter: "D", text: "D: Apagar", correct: false }] },
+      { text: "2/10: Vendas de R$ 40.000, produto X faturou R$ 10.000. Qual a %?", options: [{ letter: "A", text: "A: 15%", correct: false }, { letter: "B", text: "B: 20%", correct: false }, { letter: "C", text: "C: 25%", correct: true }, { letter: "D", text: "D: 30%", correct: false }] },
+      { text: "3/10: O erro '#VALOR!' acontece quando:", options: [{ letter: "A", text: "A: Coluna estreita", correct: false }, { letter: "B", text: "B: Texto em cálculo matemático", correct: true }, { letter: "C", text: "C: Célula vazia", correct: false }, { letter: "D", text: "D: Arquivo fechado", correct: false }] },
+      { text: "4/10: Acréscimo de 15% sobre custo na célula C4:", options: [{ letter: "A", text: "A: =C4 * 1,15", correct: true }, { letter: "B", text: "B: =C4 + 15", correct: false }, { letter: "C", text: "C: =C4 * 15%", correct: false }, { letter: "D", text: "D: =C4 / 1,15", correct: false }] },
+      { text: "5/10: O erro '##### ' significa que:", options: [{ letter: "A", text: "A: Fórmula errada", correct: false }, { letter: "B", text: "B: Coluna curta para o valor", correct: true }, { letter: "C", text: "C: Dado apagado", correct: false }, { letter: "D", text: "D: Excel travou", correct: false }] },
+      { text: "6/10: Meta de R$ 80.000 com 75% atingido, quanto foi faturado?", options: [{ letter: "A", text: "A: R$ 55.000", correct: false }, { letter: "B", text: "B: R$ 60.000", correct: true }, { letter: "C", text: "C: R$ 65.000", correct: false }, { letter: "D", text: "D: R$ 70.000", correct: false }] },
+      { text: "7/10: Função para calcular a MÉDIA de B2 até B10:", options: [{ letter: "A", text: "A: =SOMAR/2", correct: false }, { letter: "B", text: "B: =MÉDIA(B2:B10)", correct: true }, { letter: "C", text: "C: =MEDIANA", correct: false }, { letter: "D", text: "D: =CALCULAR", correct: false }] },
+      { text: "8/10: O erro '#N/A' indica que:", options: [{ letter: "A", text: "A: Valor procurado não achado", correct: true }, { letter: "B", text: "B: Número negativo", correct: false }, { letter: "C", text: "C: Campo obrigatório", correct: false }, { letter: "D", text: "D: Divisão inválida", correct: false }] },
+      { text: "9/10: Desconto sucessivo de 10% mais 10% sobre R$ 100:", options: [{ letter: "A", text: "A: R$ 80,00", correct: false }, { letter: "B", text: "B: R$ 81,00", correct: true }, { letter: "C", text: "C: R$ 82,00", correct: false }, { letter: "D", text: "D: R$ 85,00", correct: false }] },
+      { text: "10/10 [CHEFÃO]: Meta R$ 50.000 com 65% atingido. Não vendido:", options: [{ letter: "A", text: "A: R$ 32.500", correct: false }, { letter: "B", text: "B: R$ 15.000", correct: false }, { letter: "C", text: "C: R$ 17.500", correct: true }, { letter: "D", text: "D: R$ 18.200", correct: false }] }
+    ];
+
+    let canvas, ctx;
+    let currentPhase = 1;
+    let currentQIdx = 0;
+    let lives = 3;
+    let score = 0;
+    let dotsEaten = 0;
+    let gameInterval = null;
+    let activeQList = [];
+    let isPaused = false;
+    let isFrozen = false;
+    let isShielded = false;
+    let shrinkLevel = 0;
+
+    let pacman = { x: 300, y: 340, radius: 8, speed: 3, dx: 0, dy: 0, mouth: 0.2 };
+    let ghosts = [];
+    let dots = [];
+    let optionNodes = [];
+    let walls = [];
+    const keys = {};
+
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if(e.key.toLowerCase() === 'p') togglePause();
+      if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D'].includes(e.key)) e.preventDefault();
+    });
+    window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+    function initGame() {
       document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('phase-transition-screen').classList.add('hidden');
+      document.getElementById('end-screen').classList.add('hidden');
       document.getElementById('game-screen').classList.remove('hidden');
+
+      canvas = document.getElementById('gameCanvas');
+      ctx = canvas.getContext('2d');
+
+      currentPhase = 1;
+      currentQIdx = 0;
+      lives = 3;
+      score = 0;
+      dotsEaten = 0;
+      shrinkLevel = 0;
+      isPaused = false;
+
+      loadPhase(1);
+      if(gameInterval) cancelAnimationFrame(gameInterval);
+      loop();
+    }
+
+    function initPhase2() {
+      document.getElementById('phase-transition-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+      currentPhase = 2;
+      currentQIdx = 0;
+      shrinkLevel = 0;
+      isPaused = false;
+      loadPhase(2);
+      if(gameInterval) cancelAnimationFrame(gameInterval);
+      loop();
+    }
+
+    function loadPhase(phase) {
+      activeQList = (phase === 1) ? questionsPhase1 : questionsPhase2;
+      setupQuestion();
+      setupMap();
+    }
+
+    function setupQuestion() {
+      const q = activeQList[currentQIdx];
+      const isBoss = (currentPhase === 2 && currentQIdx === 9);
       
-      const canvas = document.getElementById('gameCanvas');
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#ffe600';
-      ctx.font = '20px Arial';
-      ctx.fillText("Pac-Man Carregado!", 150, 150);
+      document.getElementById('hud-level').innerText = currentPhase + (isBoss ? " (CHEFÃO)" : "");
+      document.getElementById('hud-lives').innerText = '❤️'.repeat(lives);
+      document.getElementById('hud-score').innerText = score;
+      document.getElementById('hud-dots').innerText = dotsEaten;
+      document.getElementById('q-phase').innerText = `FASE ${currentPhase} - QUESTÃO ${currentQIdx + 1}/${activeQList.length}`;
+      document.getElementById('q-text').innerText = q.text;
+
+      const m = 15 + (shrinkLevel * 10);
+      const w = 600, h = 400;
+      const optW = 85, optH = 24;
+
+      const pos = [
+        { x: m + optW/2 + 10, y: m + optH/2 + 10 },
+        { x: w - m - optW/2 - 10, y: m + optH/2 + 10 },
+        { x: m + optW/2 + 10, y: h - m - optH/2 - 10 },
+        { x: w - m - optW/2 - 10, y: h - m - optH/2 - 10 }
+      ];
+
+      optionNodes = q.options.map((opt, i) => ({
+        x: pos[i].x, y: pos[i].y, width: optW, height: optH, text: opt.text, correct: opt.correct
+      }));
+      updateShop();
+    }
+
+    function setupMap() {
+      const m = 15 + (shrinkLevel * 10);
+      const w = 600, h = 400;
+      const minX = m, maxX = w - m, minY = m, maxY = h - m;
+      const cx = minX + (maxX - minX)/2, cy = minY + (maxY - minY)/2;
+
+      walls = [
+        { x: cx - 60, y: cy + 10, w: 120, h: 25 },
+        { x: minX + 30, y: minY + 40, w: 70, h: 25 },
+        { x: maxX - 100, y: minY + 40, w: 70, h: 25 },
+        { x: minX + 30, y: maxY - 65, w: 70, h: 25 },
+        { x: maxX - 100, y: maxY - 65, w: 70, h: 25 }
+      ].slice(0, Math.max(1, 5 - currentQIdx));
+
+      pacman.x = cx;
+      pacman.y = maxY - 20;
+      pacman.dx = 0; pacman.dy = 0;
+
+      ghosts = [{
+        x: cx, y: minY + 50, radius: 8, color: (currentPhase === 2 && currentQIdx === 9)? '#ff3366' : '#ff0000',
+        speed: (currentPhase === 2 && currentQIdx === 9)? 2.2 : 1.5, dx: 1, dy: 1
+      }];
+
+      dots = [];
+      for(let x = minX + 25; x < maxX - 25; x += 30) {
+        for(let y = minY + 25; y < maxY - 25; y += 30) {
+          if(Math.random() > 0.3) dots.push({ x, y, radius: 2, eaten: false });
+        }
+      }
+    }
+
+    function togglePause() {
+      if(!document.getElementById('game-screen').classList.contains('hidden')) {
+        isPaused = !isPaused;
+        document.getElementById('pause-btn').innerText = isPaused ? "▶ CONTINUAR" : "⏸ PAUSE";
+      }
+    }
+
+    function loop() {
+      if(!isPaused) update();
+      render();
+      gameInterval = requestAnimationFrame(loop);
+    }
+
+    function checkCollision(nx, ny, r) {
+      const m = 15 + (shrinkLevel * 10);
+      if(nx - r < m || nx + r > 600 - m || ny - r < m || ny + r > 400 - m) return true;
+      return walls.some(w => nx + r > w.x && nx - r < w.x + w.w && ny + r > w.y && ny - r < w.y + w.h);
+    }
+
+    function update() {
+      let ndx = 0, ndy = 0;
+      if(keys['ArrowLeft'] || keys['a'] || keys['A']) ndx = -pacman.speed;
+      else if(keys['ArrowRight'] || keys['d'] || keys['D']) ndx = pacman.speed;
+      if(keys['ArrowUp'] || keys['w'] || keys['W']) ndy = -pacman.speed;
+      else if(keys['ArrowDown'] || keys['s'] || keys['S']) ndy = pacman.speed;
+
+      if(ndx !== 0 && !checkCollision(pacman.x + ndx, pacman.y, pacman.radius)) { pacman.x += ndx; pacman.dx = ndx; }
+      if(ndy !== 0 && !checkCollision(pacman.x, pacman.y + ndy, pacman.radius)) { pacman.y += ndy; pacman.dy = ndy; }
+
+      pacman.mouth += 0.03;
+
+      dots.forEach(d => {
+        if(!d.eaten && Math.hypot(pacman.x - d.x, pacman.y - d.y) < pacman.radius + 2) {
+          d.eaten = true; score += 10; dotsEaten++;
+          document.getElementById('hud-score').innerText = score;
+          document.getElementById('hud-dots').innerText = dotsEaten;
+          updateShop();
+        }
+      });
+
+      if(!isFrozen) {
+        ghosts.forEach(g => {
+          let gx = g.x + g.dx * g.speed;
+          let gy = g.y + g.dy * g.speed;
+          if(checkCollision(gx, g.y, g.radius)) g.dx *= -1; else g.x = gx;
+          if(checkCollision(g.x, gy, g.radius)) g.dy *= -1; else g.y = gy;
+
+          if(!isShielded && Math.hypot(pacman.x - g.x, pacman.y - g.y) < pacman.radius + g.radius) {
+            lives--;
+            document.getElementById('hud-lives').innerText = '❤️'.repeat(lives);
+            if(lives <= 0) {
+              cancelAnimationFrame(gameInterval);
+              document.getElementById('game-screen').classList.add('hidden');
+              document.getElementById('end-screen').classList.remove('hidden');
+              document.getElementById('end-title').innerText = "GAME OVER";
+              document.getElementById('end-message').innerText = `Pontuação Final: ${score}`;
+            } else {
+              pacman.x = 300; pacman.y = 340;
+            }
+          }
+        });
+      }
+
+      optionNodes.forEach(opt => {
+        if(pacman.x > opt.x - opt.width/2 && pacman.x < opt.x + opt.width/2 &&
+           pacman.y > opt.y - opt.height/2 && pacman.y < opt.y + opt.height/2) {
+          if(opt.correct) {
+            score += 100; currentQIdx++;
+            if(currentQIdx >= activeQList.length) {
+              if(currentPhase === 1) {
+                cancelAnimationFrame(gameInterval);
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('phase-transition-screen').classList.remove('hidden');
+              } else {
+                cancelAnimationFrame(gameInterval);
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('end-screen').classList.remove('hidden');
+                document.getElementById('end-title').innerText = "VITÓRIA EXCELENTE!";
+                document.getElementById('end-message').innerText = `Pontuação Final: ${score}`;
+              }
+            } else {
+              if(currentPhase === 2) shrinkLevel++;
+              setupQuestion(); setupMap();
+            }
+          } else {
+            lives--;
+            document.getElementById('hud-lives').innerText = '❤️'.repeat(lives);
+            if(lives <= 0) {
+              cancelAnimationFrame(gameInterval);
+              document.getElementById('game-screen').classList.add('hidden');
+              document.getElementById('end-screen').classList.remove('hidden');
+              document.getElementById('end-title').innerText = "GAME OVER";
+            }
+          }
+        }
+      });
+    }
+
+    function updateShop() {
+      document.getElementById('shield-btn').disabled = dotsEaten < 10;
+      document.getElementById('freeze-btn').disabled = dotsEaten < 30;
+    }
+
+    document.getElementById('shield-btn').onclick = () => {
+      if(dotsEaten >= 10) { dotsEaten -= 10; isShielded = true; setTimeout(() => isShielded = false, 5000); updateShop(); }
+    };
+    document.getElementById('freeze-btn').onclick = () => {
+      if(dotsEaten >= 30) { dotsEaten -= 30; isFrozen = true; setTimeout(() => isFrozen = false, 4000); updateShop(); }
+    };
+
+    document.getElementById('main-start-btn').onclick = initGame;
+    document.getElementById('phase2-btn').onclick = initPhase2;
+    document.getElementById('restart-btn').onclick = initGame;
+
+    function render() {
+      ctx.fillStyle = '#05070a';
+      ctx.fillRect(0, 0, 600, 400);
+
+      const m = 15 + (shrinkLevel * 10);
+      ctx.strokeStyle = '#1919a6'; ctx.lineWidth = 4;
+      ctx.strokeRect(m, m, 600 - 2*m, 400 - 2*m);
+
+      ctx.fillStyle = '#0a0d2c'; ctx.strokeStyle = '#2121ff'; ctx.lineWidth = 2;
+      walls.forEach(w => { ctx.fillRect(w.x, w.y, w.w, w.h); ctx.strokeRect(w.x, w.y, w.w, w.h); });
+
+      dots.forEach(d => {
+        if(!d.eaten) { ctx.beginPath(); ctx.arc(d.x, d.y, d.radius, 0, Math.PI*2); ctx.fillStyle = '#ffb8ae'; ctx.fill(); }
+      });
+
+      optionNodes.forEach(opt => {
+        ctx.fillStyle = '#151a24'; ctx.strokeStyle = '#00d2ff'; ctx.lineWidth = 2;
+        ctx.fillRect(opt.x - opt.width/2, opt.y - opt.height/2, opt.width, opt.height);
+        ctx.strokeRect(opt.x - opt.width/2, opt.y - opt.height/2, opt.width, opt.height);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(opt.text, opt.x, opt.y);
+      });
+
+      ghosts.forEach(g => {
+        ctx.beginPath(); ctx.arc(g.x, g.y, g.radius, Math.PI, 0, false);
+        ctx.lineTo(g.x + g.radius, g.y + g.radius); ctx.lineTo(g.x - g.radius, g.y + g.radius);
+        ctx.fillStyle = isFrozen ? '#00d2ff' : g.color; ctx.fill();
+      });
+
+      ctx.beginPath();
+      ctx.arc(pacman.x, pacman.y, pacman.radius, 0.2, Math.PI * 1.8);
+      ctx.lineTo(pacman.x, pacman.y);
+      ctx.fillStyle = isShielded ? '#00ff88' : '#ffe600'; ctx.fill();
+
+      if(isPaused) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0,0,600,400);
+        ctx.fillStyle = '#ffe600'; ctx.font = 'bold 20px monospace'; ctx.textAlign = 'center';
+        ctx.fillText("PAUSADO", 300, 200);
+      }
     }
   </script>
-
 </body>
 </html>
